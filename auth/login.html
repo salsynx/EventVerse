@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login - EventX</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="auth.js"></script>
+<style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+    body { display: flex; justify-content: center; align-items: center; height: 100vh; background: linear-gradient(135deg, #cb4f11, #2575fc); }
+    .login-box { background: #fff; padding: 40px; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.15); width: 360px; }
+    h2 { font-family: 'Poppins', sans-serif; margin-bottom: 25px; text-align: center; }
+    input { width: 100%; padding: 12px; margin-bottom: 20px; border-radius: 8px; border: 1px solid #ccc; }
+    button { width: 100%; padding: 12px; border: none; border-radius: 8px; background: #0055cc; color: #fff; font-weight: 600; cursor: pointer; }
+    button:hover { background: #0041a8; }
+    .links { text-align: center; margin-top: 15px; }
+    .links a { color: #0055cc; font-weight: 500; text-decoration: none; }
+</style>
+</head>
+<body>
+
+<div class="login-box">
+    <h2>Login</h2>
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="password" placeholder="Password">
+    <button onclick="login()">Login</button>
+    <div class="links">
+        <a href="signup.html">Sign Up</a>
+    </div>
+</div>
+
+<script>
+function login() {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    auth.signInWithEmailAndPassword(email, password)
+    .then((userCredential) => {
+        const user = userCredential.user;
+        // Check role in Firestore
+        db.collection("users").doc(user.uid).get()
+        .then(doc => {
+            if(doc.exists) {
+                const role = doc.data().role;
+                if(role === "admin") window.location.href="../admindashboard/admin.html";
+                else if(role === "organizer") window.location.href="../organizerdashboard/organizer.html";
+                else window.location.href="../participantdashboard/participant.html";
+            }
+        });
+    })
+    .catch(error => alert(error.message));
+}
+</script>
+
+</body>
+</html>
