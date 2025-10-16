@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Create/Edit Event - EventX</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="../auth/auth.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Inter',sans-serif;}
+body{background:#f0f4f8;color:#333;}
+header{display:flex;justify-content:space-between;align-items:center;padding:15px 40px;background:#0055cc;color:#fff;box-shadow:0 4px 20px rgba(0,0,0,0.1);}
+header h1{font-family:'Poppins',sans-serif;font-weight:700;font-size:26px;}
+header nav a{margin-left:25px;color:#fff;font-weight:500;text-decoration:none;}
+header nav a:hover{color:#ffdd57;}
+.main{margin:30px 40px;}
+.dashboard-title{font-size:28px;font-weight:700;margin-bottom:20px;color:#222;}
+.form-card{background:#fff;border-radius:16px;padding:25px;box-shadow:0 8px 25px rgba(0,0,0,0.1);}
+.form-card input, .form-card textarea{width:100%;padding:12px;margin-bottom:15px;border:1px solid #ccc;border-radius:8px;font-size:14px;}
+.form-card button{padding:12px 20px;background:#0055cc;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;}
+.form-card button:hover{background:#0041a8;}
+</style>
+</head>
+<body>
+
+<header>
+<h1>Create/Edit Event</h1>
+<nav>
+<a href="../admindashboard/admin.html">Dashboard</a>
+<a href="#" onclick="logout()">Logout</a>
+</nav>
+</header>
+
+<div class="main">
+<div class="dashboard-title">Event Details</div>
+
+<div class="form-card">
+<input type="text" id="event-name" placeholder="Event Name" />
+<input type="date" id="event-date" />
+<input type="text" id="event-venue" placeholder="Venue" />
+<textarea id="event-description" placeholder="Event Description"></textarea>
+<button onclick="saveEvent()">Save Event</button>
+</div>
+</div>
+
+<script>
+function logout(){auth.signOut().then(()=>window.location.href="../auth/login.html");}
+
+// Check role: Only organizer/admin can create
+auth.onAuthStateChanged(user=>{
+    if(!user) window.location.href="../auth/login.html";
+});
+
+function saveEvent(){
+    const name = document.getElementById("event-name").value;
+    const date = document.getElementById("event-date").value;
+    const venue = document.getElementById("event-venue").value;
+    const description = document.getElementById("event-description").value;
+
+    if(!name || !date || !venue) return alert("Please fill all required fields!");
+
+    db.collection("events").add({
+        name,
+        date,
+        venue,
+        description,
+        createdBy: auth.currentUser.uid,
+        timestamp: new Date()
+    }).then(()=>{
+        alert("Event created successfully!");
+        window.location.href="../organizerdashboard/organizer.html";
+    }).catch(err=>console.error(err));
+}
+</script>
+
+</body>
+</html>
