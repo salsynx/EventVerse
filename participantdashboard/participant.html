@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Participant Dashboard - EventX</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="../auth/auth.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Inter',sans-serif;}
+body{background:#f0f4f8;color:#333;}
+header{display:flex;justify-content:space-between;align-items:center;padding:15px 40px;background:#0055cc;color:#fff;box-shadow:0 4px 20px rgba(0,0,0,0.1);}
+header h1{font-family:'Poppins',sans-serif;font-weight:700;font-size:26px;}
+header nav a{margin-left:25px;color:#fff;font-weight:500;text-decoration:none;}
+header nav a:hover{color:#ffdd57;}
+.main{margin:30px 40px;}
+.dashboard-title{font-size:28px;font-weight:700;margin-bottom:20px;color:#222;}
+.events-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;}
+.card{background:#fff;border-radius:16px;padding:20px;box-shadow:0 8px 25px rgba(0,0,0,0.1);transition:0.3s;}
+.card:hover{transform:translateY(-5px);box-shadow:0 12px 30px rgba(0,0,0,0.15);}
+.card h3{font-family:'Poppins',sans-serif;font-weight:600;margin-bottom:10px;color:#333;}
+.card p{font-size:14px;color:#666;margin-bottom:15px;}
+.card .actions{display:flex;gap:10px;}
+.card .actions button{flex:1;padding:10px;border:none;border-radius:8px;background:#0055cc;color:#fff;font-weight:600;cursor:pointer;}
+.card .actions button:hover{background:#0041a8;}
+</style>
+</head>
+<body>
+
+<header>
+<h1>Participant Dashboard</h1>
+<nav>
+<a href="#">Dashboard</a>
+<a href="#" onclick="logout()">Logout</a>
+</nav>
+</header>
+
+<div class="main">
+<div class="dashboard-title">Available Events</div>
+<div class="events-list" id="events-list"></div>
+</div>
+
+<script>
+function logout(){auth.signOut().then(()=>window.location.href="../auth/login.html");}
+
+auth.onAuthStateChanged(user=>{
+    if(user){
+        db.collection("events").get().then(snapshot=>{
+            const list = document.getElementById("events-list");
+            snapshot.forEach(doc=>{
+                const data = doc.data();
+                const card = document.createElement("div");
+                card.classList.add("card");
+                card.innerHTML = `<h3>${data.name}</h3>
+                <p>${data.date} | ${data.venue}</p>
+                <div class="actions">
+                <button onclick="register('${doc.id}')">Register</button>
+                <button onclick="viewEvent('${doc.id}')">View</button>
+                </div>`;
+                list.appendChild(card);
+            });
+        });
+    } else window.location.href="../auth/login.html";
+});
+
+function register(eventId){
+    const user = auth.currentUser;
+    if(user){
+        db.collection("registrations").add({
+            participant: user.uid,
+            event: eventId,
+            timestamp: new Date()
+        }).then(()=>alert("Registered successfully!"));
+    }
+}
+
+function viewEvent(id){window.location.href=`../events/event.html?id=${id}`;}
+</script>
+
+</body>
+</html>
